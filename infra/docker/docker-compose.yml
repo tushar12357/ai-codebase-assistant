@@ -1,0 +1,23 @@
+services:
+
+  node-tools:
+    build: ../../node-tools
+    container_name: node-tools
+    ports:
+      - "4000:4000"
+    volumes:
+      - ../../node-tools:/app
+    environment:
+      NODE_ENV: development
+
+  ai-service:
+    build: ../../ai-service
+    container_name: ai-service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - node-tools
+    environment:
+      NODE_TOOL_SERVER: http://node-tools:4000
+    volumes:
+      - ../../ai-service:/app
