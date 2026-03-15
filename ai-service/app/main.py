@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from app.graph.agent_graph import graph
 
 app = FastAPI(
-    title="AI DevOps Agent",
+    title="AI Codebase Agent",
     version="1.0.0"
 )
 
