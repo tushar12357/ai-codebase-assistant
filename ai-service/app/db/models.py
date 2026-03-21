@@ -23,7 +23,7 @@ class Chat(Base):
     id = Column(String, primary_key=True, default=gen_id)
     user_id = Column(String, ForeignKey("users.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
-
+    title = Column(String, default="New Chat")
     user = relationship("User", back_populates="chats")
     messages = relationship("Message", back_populates="chat")
 

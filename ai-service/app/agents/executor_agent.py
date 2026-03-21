@@ -1,15 +1,14 @@
 from app.tools.node_tool_client import load_node_tools
+import os
 
 tools = load_node_tools()
 
 
 def execute_plan(plan):
-
     result = None
     repo_name = None
 
-    for step in plan:
-
+    for i, step in enumerate(plan):
         tool_name = step["tool"]
         tool_input = step["input"]
 
@@ -24,37 +23,60 @@ def execute_plan(plan):
             else:
                 tool_input = result
 
-        # 📁 Fix repo path mapping
-        if tool_name == "repo_reader" and isinstance(tool_input, str):
-            if tool_input.startswith("repo/") and repo_name:
+        # 📁 Map repo path correctly
+        if tool_name == "repo_reader" and repo_name:
+            if tool_input.startswith("repo/"):
                 file_path = tool_input.replace("repo/", "")
                 tool_input = f"{repo_name}/{file_path}"
 
-        # 🔍 Debug (very useful)
         print(f"\n[EXECUTE] {tool_name} → {tool_input}\n")
 
-        for tool in tools:
-            if tool.name == tool_name:
+        # 🔍 Find tool
+        tool = next((t for t in tools if t.name == tool_name), None)
+        if not tool:
+            print(f"❌ Tool not found: {tool_name}")
+            continue
 
-                # ✅ FIX: Proper payload for StructuredTool
-                if tool_name == "clone_repo":
-                    result = tool.run({"url": tool_input})
+        try:
+            # 🚀 Execute safely
+            if tool_name == "clone_repo":
+                result = tool.run({"url": tool_input})
 
-                elif tool_name == "repo_reader":
-                    result = tool.run({"path": tool_input})
-
-                elif tool_name == "summarize_code":
-                    result = tool.run({"content": tool_input})
-
-                elif tool_name == "github_search":
-                    result = tool.run({"query": tool_input})
-
-                else:
-                    result = tool.run(tool_input)
-
-                # 📦 Capture repo name
-                if tool_name == "clone_repo" and isinstance(result, dict):
+                if isinstance(result, dict):
                     repo_name = result.get("repo")
+
+                print("📦 Repo:", repo_name)
+
+            elif tool_name == "repo_reader":
+                # 🛑 Prevent crash if repo missing
+                if not repo_name:
+                    print("⚠️ Skipping repo_reader (no repo)")
+                    continue
+
+                # 🛑 Check file exists
+                full_path = f"node-tools/repos/{tool_input}"
+                if not os.path.exists(full_path):
+                    print(f"⚠️ File not found: {full_path}")
+
+                    # 🔁 fallback to README
+                    fallback = f"{repo_name}/README.md"
+                    print(f"➡️ Trying fallback: {fallback}")
+                    tool_input = fallback
+
+                result = tool.run({"path": tool_input})
+
+            elif tool_name == "summarize_code":
+                result = tool.run({"content": tool_input})
+
+            elif tool_name == "github_search":
+                result = tool.run({"query": tool_input})
+
+            else:
+                result = tool.run(tool_input)
+
+        except Exception as e:
+            print(f"❌ ERROR in {tool_name}: {e}")
+            result = {"error": str(e)}
 
         print("[RESULT]", result)
 

@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.db.database import SessionLocal
 from app.db.models import Chat, Message
 from app.auth.deps import get_current_user, get_db
 from app.chat.service import get_messages, save_message
+from app.chat.utils import generate_title
 from app.graph.agent_graph import graph
 
 router = APIRouter(prefix="/chat", tags=["chat"])
+
 
 # ✅ CREATE CHAT
 @router.post("/create")
@@ -14,12 +15,15 @@ def create_chat(
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    chat = Chat(user_id=user.id)
+    chat = Chat(user_id=user.id, title="New Chat")
     db.add(chat)
     db.commit()
     db.refresh(chat)
 
-    return {"chat_id": chat.id}
+    return {
+        "chat_id": chat.id,
+        "title": chat.title
+    }
 
 
 # ✅ LIST CHATS
@@ -33,6 +37,7 @@ def list_chats(
     return [
         {
             "id": c.id,
+            "title": c.title,
             "created_at": c.created_at
         }
         for c in chats
@@ -63,7 +68,7 @@ def get_chat_messages(
     ]
 
 
-# ✅ ASK (moved under /chat)
+# ✅ ASK (AUTO TITLE + AGENT)
 @router.post("/{chat_id}/ask")
 def ask(
     chat_id: str,
@@ -77,14 +82,42 @@ def ask(
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
 
+    # 🔥 Generate title ONLY on first message
+    existing_count = db.query(Message).filter(Message.chat_id == chat_id).count()
+    if existing_count == 0:
+        chat.title = generate_title(query)
+        db.commit()
+
+    # get history
     messages = get_messages(db, chat_id)
     messages.append({"role": "user", "content": query})
 
+    # run agent
     result = graph.invoke({
         "messages": messages
     })
 
+    # save messages
     save_message(db, chat_id, "user", query)
     save_message(db, chat_id, "assistant", str(result["result"]))
 
     return {"answer": result["result"]}
+
+
+# ✅ RENAME CHAT
+@router.put("/{chat_id}/rename")
+def rename_chat(
+    chat_id: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user.id).first()
+
+    if not chat:
+        raise HTTPException(status_code=404)
+
+    chat.title = payload.get("title", chat.title)
+    db.commit()
+
+    return {"message": "updated"}
