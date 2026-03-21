@@ -9,6 +9,10 @@ services:
       - ../../node-tools:/app
     environment:
       NODE_ENV: development
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/tools"]
+      interval: 5s
+      retries: 5
 
   ai-service:
     build: ../../ai-service
@@ -16,7 +20,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - node-tools
+      node-tools:
+        condition: service_healthy
     environment:
       NODE_TOOL_SERVER: http://node-tools:4000
     volumes:

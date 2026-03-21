@@ -4,3 +4,7 @@ requests
 langchain
 langgraph
 langchain-openai
+dotenv
+pydantic
+langchain_groq
+langchain_core

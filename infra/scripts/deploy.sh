@@ -1,11 +1,26 @@
 #!/bin/bash
 
+set -e
+
 echo "Starting deployment..."
 
-docker-compose -f infra/docker/docker-compose.yml down
+# Detect compose command
 
-docker-compose -f infra/docker/docker-compose.yml build
+if command -v docker-compose &> /dev/null; then
+COMPOSE_CMD="docker-compose"
+else
+COMPOSE_CMD="docker compose"
+fi
 
-docker-compose -f infra/docker/docker-compose.yml up -d
+COMPOSE_FILE="infra/docker/docker-compose.yml"
+
+echo "Stopping existing containers..."
+$COMPOSE_CMD -f $COMPOSE_FILE down
+
+echo "Building images..."
+$COMPOSE_CMD -f $COMPOSE_FILE build
+
+echo "Starting services..."
+$COMPOSE_CMD -f $COMPOSE_FILE up -d
 
 echo "Deployment complete."

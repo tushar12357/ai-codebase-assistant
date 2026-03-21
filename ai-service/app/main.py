@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.graph.agent_graph import graph
 
 app = FastAPI(
@@ -8,6 +9,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # change to frontend URL later
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def health():

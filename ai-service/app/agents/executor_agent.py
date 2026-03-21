@@ -1,5 +1,4 @@
 from app.tools.node_tool_client import load_node_tools
-import re
 
 tools = load_node_tools()
 

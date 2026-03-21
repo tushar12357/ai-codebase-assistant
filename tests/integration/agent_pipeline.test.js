@@ -1,4 +1,4 @@
-const axios = require("axios");
+import { post } from "axios";
 
 describe("AI Agent Pipeline", () => {
 
@@ -6,7 +6,7 @@ describe("AI Agent Pipeline", () => {
 
   test("should summarize package.json", async () => {
 
-    const response = await axios.post(AI_URL, {
+    const response = await post(AI_URL, {
       query: "summarize package.json"
     });
 
