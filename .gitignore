@@ -22,3 +22,4 @@ Thumbs.db
 
 # repos cloned by tools
 repos/
+ai-service/test.db

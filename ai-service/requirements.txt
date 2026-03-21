@@ -8,3 +8,8 @@ dotenv
 pydantic
 langchain_groq
 langchain_core
+sqlalchemy
+psycopg2-binary
+passlib[bcrypt]
+python-jose
+argon2-cffi

@@ -5,22 +5,17 @@ from app.agents.executor_agent import execute_plan
 
 
 class AgentState(TypedDict):
-    query: str
+    messages:list
     plan: list
     result: str
 
-
 def planner_node(state: AgentState):
-
-    plan = create_plan(state["query"])
-
+    messages = state["messages"]
+    plan = create_plan(messages[-1]["content"], messages)
     return {"plan": plan}
 
-
 def executor_node(state: AgentState):
-
     result = execute_plan(state["plan"])
-
     return {"result": result}
 
 

@@ -1,5 +1,8 @@
+import dotenv from "dotenv"
 import express from "express";
 import toolRoutes from "./routes/toolRoutes.js";
+
+dotenv.config()
 
 const app = express();
 
