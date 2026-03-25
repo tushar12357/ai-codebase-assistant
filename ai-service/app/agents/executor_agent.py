@@ -1,18 +1,17 @@
-from app.tools.node_tool_client import load_node_tools
-import os
+from app.tools.node_tool_client import load_node_tools 
+import os 
 
-tools = load_node_tools()
-
+tools = load_node_tools() 
 
 def execute_plan(plan):
     result = None
     repo_name = None
 
-    for i, step in enumerate(plan):
+    for step in plan:
         tool_name = step["tool"]
         tool_input = step["input"]
 
-        # 🔁 Handle <previous>
+        # 🔁 Resolve <previous>
         if tool_input == "<previous>":
             if isinstance(result, dict):
                 tool_input = (
@@ -23,12 +22,6 @@ def execute_plan(plan):
             else:
                 tool_input = result
 
-        # 📁 Map repo path correctly
-        if tool_name == "repo_reader" and repo_name:
-            if tool_input.startswith("repo/"):
-                file_path = tool_input.replace("repo/", "")
-                tool_input = f"{repo_name}/{file_path}"
-
         print(f"\n[EXECUTE] {tool_name} → {tool_input}\n")
 
         # 🔍 Find tool
@@ -38,33 +31,23 @@ def execute_plan(plan):
             continue
 
         try:
-            # 🚀 Execute safely
             if tool_name == "clone_repo":
                 result = tool.run({"url": tool_input})
-
                 if isinstance(result, dict):
                     repo_name = result.get("repo")
-
-                print("📦 Repo:", repo_name)
+                    print("📦 Repo:", repo_name)
 
             elif tool_name == "repo_reader":
-                # 🛑 Prevent crash if repo missing
                 if not repo_name:
                     print("⚠️ Skipping repo_reader (no repo)")
                     continue
 
-                # 🛑 Check file exists
-                full_path = f"node-tools/repos/{tool_input}"
-                if not os.path.exists(full_path):
-                    print(f"⚠️ File not found: {full_path}")
+                file_path = tool_input.replace("repos/", "")
+                full_path = f"repos/{repo_name}/{file_path}"
 
-                    # 🔁 fallback to README
-                    fallback = f"{repo_name}/README.md"
-                    print(f"➡️ Trying fallback: {fallback}")
-                    tool_input = fallback
+                print(f"📂 Resolved path → {full_path}")
 
-                result = tool.run({"path": tool_input})
-
+                result = tool.run({"path": full_path})
             elif tool_name == "summarize_code":
                 result = tool.run({"content": tool_input})
 

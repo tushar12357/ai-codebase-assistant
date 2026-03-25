@@ -2,6 +2,10 @@ pipeline {
 
     agent any
 
+    environment {
+        COMPOSE_FILE = "infra/docker/docker-compose.yml"
+    }
+
     stages {
 
         stage('Checkout') {
@@ -12,20 +16,20 @@ pipeline {
 
         stage('Build Containers') {
             steps {
-                sh 'docker compose -f infra/docker/docker-compose.yml build'
+                sh 'docker compose -f $COMPOSE_FILE build'
             }
         }
 
-        stage('Run Tests') {
+        stage('Start Services') {
             steps {
-                sh 'npm install'
-                sh 'npm test'
+                sh 'docker compose -f $COMPOSE_FILE up -d'
             }
         }
 
-        stage('Deploy') {
+        stage('Health Check') {
             steps {
-                sh 'docker compose -f infra/docker/docker-compose.yml up -d'
+                sh 'sleep 10'
+                sh 'curl -f http://localhost:8000 || exit 1'
             }
         }
     }

@@ -1,28 +1,57 @@
 services:
 
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ai_codebase
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
   node-tools:
-    build: ../../node-tools
+    build:
+      context: ../../node-tools
     container_name: node-tools
+    restart: always
     ports:
       - "4000:4000"
-    volumes:
-      - ../../node-tools:/app
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4000/tools"]
       interval: 5s
       retries: 5
 
   ai-service:
-    build: ../../ai-service
+    build:
+      context: ../../ai-service
     container_name: ai-service
+    restart: always
     ports:
       - "8000:8000"
     depends_on:
       node-tools:
         condition: service_healthy
+      db:
+        condition: service_healthy
     environment:
       NODE_TOOL_SERVER: http://node-tools:4000
-    volumes:
-      - ../../ai-service:/app
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/ai_codebase
+      ENV: production
+    command: >
+      sh -c "
+      alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000
+      "
+
+volumes:
+  postgres_data:

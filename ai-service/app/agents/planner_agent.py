@@ -7,7 +7,6 @@ llm = ChatGroq(
     temperature=0
 )
 
-
 def extract_json(text: str):
     try:
         return json.loads(text)
@@ -18,8 +17,7 @@ def extract_json(text: str):
                 return json.loads(match.group(0))
             except:
                 return []
-    return []
-
+        return []
 
 def create_plan(query: str, history: list = None):
     if history is None:
@@ -31,30 +29,23 @@ def create_plan(query: str, history: list = None):
 
     prompt = f"""
 You are a STRICT AI planning agent.
-
 Return ONLY a VALID JSON ARRAY of steps.
 
 ---
-
 Conversation:
 {context}
 
 User request:
 {query}
-
 ---
 
 Available tools:
-
 1. github_search(query)
 2. clone_repo(url)
 3. repo_reader(path)
 4. summarize_code(content)
 
----
-
-INTENT RULES (VERY IMPORTANT):
-
+--- INTENT RULES (VERY IMPORTANT):
 1. If user gives ONLY a GitHub URL:
    → ONLY use clone_repo
 
@@ -67,10 +58,7 @@ INTENT RULES (VERY IMPORTANT):
 4. If user asks to search:
    → github_search ONLY (FINAL STEP)
 
----
-
-STRICT RULES:
-
+--- STRICT RULES:
 - NEVER chain tools unless needed
 - NEVER assume user wants summary
 - repo_reader path MUST start with "repos/"
@@ -78,9 +66,7 @@ STRICT RULES:
 - ALWAYS return JSON ARRAY
 - NO explanation
 
----
-
-Examples:
+--- Examples:
 
 User: https://github.com/vercel/next.js
 [
@@ -105,9 +91,7 @@ User: best langchain repos
   {{"tool":"github_search","input":"langchain"}}
 ]
 
----
-
-Generate plan:
+--- Generate plan:
 """
 
     response = llm.invoke(prompt).content
@@ -133,7 +117,6 @@ Generate plan:
         if tool == "repo_reader":
             if not str(inp).startswith("repos/"):
                 inp = "repos/README.md"
-
             if "github.com" in str(inp):
                 inp = "repos/README.md"
 

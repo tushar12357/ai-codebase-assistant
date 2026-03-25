@@ -11,7 +11,7 @@ export const repoReader = tool({
   },
 
   async execute({ path: filePath }) {
-    const fullPath = path.join(process.cwd(), "repos", filePath);
+    const fullPath = path.join(process.cwd(), filePath);
 
     if (!fs.existsSync(fullPath)) {
       throw new Error(`File not found: ${fullPath}`);

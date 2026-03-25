@@ -13,3 +13,7 @@ psycopg2-binary
 passlib[bcrypt]
 python-jose
 argon2-cffi
+faiss-cpu 
+sentence-transformers 
+langchain-community
+langchain-text-splitters

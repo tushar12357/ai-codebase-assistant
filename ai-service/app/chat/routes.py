@@ -5,6 +5,8 @@ from app.auth.deps import get_current_user, get_db
 from app.chat.service import get_messages, save_message
 from app.chat.utils import generate_title
 from app.graph.agent_graph import graph
+import json
+from sqlalchemy import desc
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -21,7 +23,7 @@ def create_chat(
     db.refresh(chat)
 
     return {
-        "chat_id": chat.id,
+        "id": chat.id,
         "title": chat.title
     }
 
@@ -32,7 +34,12 @@ def list_chats(
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    chats = db.query(Chat).filter(Chat.user_id == user.id).all()
+    chats = (
+        db.query(Chat)
+        .filter(Chat.user_id == user.id)
+        .order_by(desc(Chat.created_at))  # 🔥 newest first
+        .all()
+    )
 
     return [
         {
@@ -42,7 +49,6 @@ def list_chats(
         }
         for c in chats
     ]
-
 
 # ✅ GET MESSAGES
 @router.get("/{chat_id}/messages")
@@ -99,8 +105,7 @@ def ask(
 
     # save messages
     save_message(db, chat_id, "user", query)
-    save_message(db, chat_id, "assistant", str(result["result"]))
-
+    save_message(db, chat_id, "assistant", json.dumps(result["result"]))
     return {"answer": result["result"]}
 
 

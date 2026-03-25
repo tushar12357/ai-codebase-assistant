@@ -9,7 +9,9 @@ const app = express();
 app.use(express.json());
 
 app.use("/", toolRoutes);
-
+app.get('/', (req, res) => {
+  return res.json({ status: "ok" });
+});
 const PORT = 4000;
 
 app.listen(PORT, () => {
