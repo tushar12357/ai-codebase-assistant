@@ -42,8 +42,21 @@ def execute_plan(plan):
                     print("⚠️ Skipping repo_reader (no repo)")
                     continue
 
-                file_path = tool_input.replace("repos/", "")
-                full_path = f"repos/{repo_name}/{file_path}"
+                # 🧠 Normalize path
+                clean_input = tool_input.replace("\\", "/")
+
+                # Case 1: already full path → use as is
+                if f"repos/{repo_name}/" in clean_input:
+                     full_path = clean_input
+
+                # Case 2: starts with repos/ but missing repo_name
+                elif clean_input.startswith("repos/"):
+                    file_path = clean_input.replace("repos/", "")
+                    full_path = f"repos/{repo_name}/{file_path}"
+
+                # Case 3: raw file like "package.json"
+                else:
+                    full_path = f"repos/{repo_name}/{clean_input}"
 
                 print(f"📂 Resolved path → {full_path}")
 
