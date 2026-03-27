@@ -1,78 +1,53 @@
-from app.tools.node_tool_client import load_node_tools 
-import os 
+from app.tools.repo_tools import clone_repo
+from app.rag.loader import load_repo
+from app.rag.chunker import chunk_docs
+from app.rag.embedder import get_embeddings
+from app.rag.vectorstore import create_vectorstore, load_vectorstore
+from app.rag.retriever import retrieve_docs
+from app.rag.qa import answer_query
+import os
 
-tools = load_node_tools() 
+embeddings = get_embeddings()
 
 def execute_plan(plan):
-    result = None
+    repo_path = None
     repo_name = None
+    db = None
+    result = None
 
     for step in plan:
-        tool_name = step["tool"]
-        tool_input = step["input"]
+        tool = step.get("tool")
+        inp = step.get("input")
 
-        # 🔁 Resolve <previous>
-        if tool_input == "<previous>":
-            if isinstance(result, dict):
-                tool_input = (
-                    result.get("content")
-                    or result.get("data")
-                    or str(result)
-                )
+        print(f"\n[EXECUTE] {tool} → {inp}")
+
+        if tool == "clone_repo":
+            repo_path = clone_repo(inp)
+            repo_name = repo_path.split("/")[-1]
+
+        elif tool == "index_repo":
+            db_path = f"vectorstores/{repo_name}"
+
+            if os.path.exists(db_path):
+                print("⚡ Using existing vector DB")
+                db = load_vectorstore(repo_name, embeddings)
             else:
-                tool_input = result
+                print("📦 Indexing repo...")
+                docs = load_repo(repo_path)
+                chunks = chunk_docs(docs)
+                db = create_vectorstore(chunks, embeddings, repo_name)
 
-        print(f"\n[EXECUTE] {tool_name} → {tool_input}\n")
+            result = "indexed"
 
-        # 🔍 Find tool
-        tool = next((t for t in tools if t.name == tool_name), None)
-        if not tool:
-            print(f"❌ Tool not found: {tool_name}")
-            continue
+        elif tool == "search_repo":
+            if db is None:
+                db = load_vectorstore(repo_name, embeddings)
 
-        try:
-            if tool_name == "clone_repo":
-                result = tool.run({"url": tool_input})
-                if isinstance(result, dict):
-                    repo_name = result.get("repo")
-                    print("📦 Repo:", repo_name)
+            docs = retrieve_docs(db, inp)
+            result = docs
 
-            elif tool_name == "repo_reader":
-                if not repo_name:
-                    print("⚠️ Skipping repo_reader (no repo)")
-                    continue
-
-                # 🧠 Normalize path
-                clean_input = tool_input.replace("\\", "/")
-
-                # Case 1: already full path → use as is
-                if f"repos/{repo_name}/" in clean_input:
-                     full_path = clean_input
-
-                # Case 2: starts with repos/ but missing repo_name
-                elif clean_input.startswith("repos/"):
-                    file_path = clean_input.replace("repos/", "")
-                    full_path = f"repos/{repo_name}/{file_path}"
-
-                # Case 3: raw file like "package.json"
-                else:
-                    full_path = f"repos/{repo_name}/{clean_input}"
-
-                print(f"📂 Resolved path → {full_path}")
-
-                result = tool.run({"path": full_path})
-            elif tool_name == "summarize_code":
-                result = tool.run({"content": tool_input})
-
-            elif tool_name == "github_search":
-                result = tool.run({"query": tool_input})
-
-            else:
-                result = tool.run(tool_input)
-
-        except Exception as e:
-            print(f"❌ ERROR in {tool_name}: {e}")
-            result = {"error": str(e)}
+        elif tool == "answer_repo":
+            result = answer_query(inp, result)
 
         print("[RESULT]", result)
 
