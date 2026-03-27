@@ -16,7 +16,7 @@ echo "🛑 Stopping existing containers..."
 $COMPOSE_CMD -f $COMPOSE_FILE down
 
 echo "🔨 Building images..."
-$COMPOSE_CMD -f $COMPOSE_FILE build
+$COMPOSE_CMD -f $COMPOSE_FILE build --no-cache
 
 echo "🚀 Starting services..."
 $COMPOSE_CMD -f $COMPOSE_FILE up -d
@@ -25,6 +25,6 @@ echo "⏳ Waiting for services..."
 sleep 10
 
 echo "✅ Checking AI service..."
-curl -f http://localhost:8000 || (echo "❌ Health check failed" && exit 1)
+curl -f http://localhost:8000/health || (echo "❌ Health check failed" && exit 1)
 
 echo "🎉 Deployment successful!"
