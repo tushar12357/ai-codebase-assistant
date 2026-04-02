@@ -34,10 +34,10 @@ function EmptyState({ onNew }: { onNew?: () => void }) {
         How can I help you today?
       </h2>
       <p className="text-sm mb-8 text-center max-w-sm" style={{ color: 'var(--text-secondary)' }}>
-        Start a conversation below, or try one of these prompts
+        Start a conversation below
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-xl">
+      {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-xl">
         {suggestions.map((s) => (
           <button
             key={s}
@@ -61,7 +61,7 @@ function EmptyState({ onNew }: { onNew?: () => void }) {
             {s}
           </button>
         ))}
-      </div>
+      </div> */}
     </div>
   )
 }
@@ -132,7 +132,7 @@ export function ChatWindow({ chat, onToggleSidebar, sidebarOpen }: ChatWindowPro
             </h1>
           ) : (
             <h1 className="font-semibold text-sm" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-muted)' }}>
-              ChatApp
+              AIDA
             </h1>
           )}
         </div>

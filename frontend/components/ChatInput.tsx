@@ -66,7 +66,7 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Message ChatApp… (Enter to send, Shift+Enter for newline)"
+          placeholder="Message AIDA... (Enter to send, Shift+Enter for newline)"
           rows={1}
           disabled={disabled}
           className="flex-1 bg-transparent resize-none outline-none text-sm leading-relaxed"

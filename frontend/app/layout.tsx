@@ -3,7 +3,7 @@ import { Providers } from '@/components/Providers'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'ChatApp — AI Assistant',
+  title: 'AIDA — Artificially Intelligent Developer Assitant',
   description: 'Your intelligent conversation partner',
 }
 

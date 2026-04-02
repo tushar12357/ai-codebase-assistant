@@ -33,7 +33,7 @@ export default function LoginPage() {
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent)' }}>
               <Sparkles size={18} className="text-white" />
             </div>
-            <span className="text-xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>ChatApp</span>
+            <span className="text-xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>AIDA - Artificially Intelligent Digital Assistant</span>
           </div>
           <h1 className="text-2xl font-semibold mb-1" style={{ fontFamily: 'var(--font-display)' }}>Welcome back</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Sign in to continue your conversations</p>

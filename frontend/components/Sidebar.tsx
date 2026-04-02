@@ -152,7 +152,7 @@ export function Sidebar({
               <Sparkles size={14} className="text-white" />
             </div>
             <span className="font-semibold text-sm" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
-              ChatApp
+              AIDA
             </span>
           </div>
           <button

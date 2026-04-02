@@ -43,7 +43,7 @@ def execute_plan(plan):
             if db is None:
                 db = load_vectorstore(repo_name, embeddings)
 
-            docs = retrieve_docs(db, inp)
+            docs = retrieve_docs(db, inp) or []
             result = docs
 
         elif tool == "answer_repo":
