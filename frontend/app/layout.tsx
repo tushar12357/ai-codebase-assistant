@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'AIDA — Artificially Intelligent Developer Assitant',
-  description: 'Your intelligent conversation partner',
+  description: 'Your intelligent developement partner',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
