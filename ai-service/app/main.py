@@ -9,7 +9,6 @@ from app.db import models
 
 app = FastAPI()
 
-# ✅ create tables
 Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
